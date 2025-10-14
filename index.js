@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json())
 
 app.get("/test", (request, response)=> {
-  return response.status(200).send({ message: "Minha segunda API" })
+  return response.status(200).send({ message: "OK" })
 })
 
 app.get("/", (request, response)=> {
