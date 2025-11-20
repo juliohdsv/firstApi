@@ -1,0 +1,19 @@
+
+services:
+  postgres:
+    container_name: first-api
+    image: bitnami/postgresql:latest
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: firstapi
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/bitnami/postgressql/
+
+volumes:
+  postgres_data:
+
+
+ 

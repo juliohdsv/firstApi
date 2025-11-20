@@ -3,6 +3,6 @@ POST http://localhost:3333/sign-up
 Content-Type: application/json
 
 {
-    "email": "tais@gmail.com",
+    "email": "Tiago@gmail.com",
     "password": "123"
 }

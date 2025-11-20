@@ -1,12 +1,9 @@
 import type { Request, Response } from "express"
 import { z, ZodError } from "zod"
 
-interface ISignUpRequest {
-  email: string
-  password: string
-}
+import { prisma } from "../lib/prisma/prisma.js"
 
-const users: ISignUpRequest[] = []
+
 const schemaSignUpRequestBody = z.object({
   email: z.email("Email required."),
   password: z
@@ -15,20 +12,30 @@ const schemaSignUpRequestBody = z.object({
 })
 
 
-export function signUpController(
+export async function signUpController(
     request: Request, 
     response: Response
 ){
     try {
       const { email, password } = schemaSignUpRequestBody.parse(request.body)
-      const userExist = users.find(item => item.email == email)
+
+      const userExist = await prisma.user.findUnique({
+        where: {
+          email,
+        }
+      })
     
       if(userExist){
         return response.status(409).send({ message: "User already exist." })
       }
-    
-      users.push({ email, password })
-    
+
+      const users = await prisma.user.create({
+        data: {
+          email,
+          password,
+        }
+      })
+      
       return response.status(201).send({ users })
   
   } catch (error) {
