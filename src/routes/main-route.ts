@@ -1,7 +1,7 @@
 
 import { Router } from "express"
 
-import { signUpController } from "../controllers/sing-up-controller.js"
+import { signUpController } from "../controllers/sign-up-controller.js"
 
 
 export const mainRoute = Router()
