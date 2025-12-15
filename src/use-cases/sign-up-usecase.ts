@@ -2,7 +2,7 @@ import { hashSync } from "bcrypt"
 import { prisma } from "../lib/prisma/prisma.js"
 import "dotenv/config"
 
-interface ISugnUpUseCaseRequest {
+interface ISignUpUseCaseRequest {
   email: string
   password: string
 }
@@ -19,7 +19,7 @@ interface ISignUpUseCaseResponse {
 export async function signUpUseCase({
   email,
   password
-}: ISugnUpUseCaseRequest): Promise<ISignUpUseCaseResponse>{
+}: ISignUpUseCaseRequest): Promise<ISignUpUseCaseResponse>{
 
   const userExist = await prisma.user.findUnique({
     where: {
