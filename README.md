@@ -35,25 +35,25 @@ A API segue um padrão de **arquitetura em camadas**, garantindo separação de 
 ```mermaid
 graph TB
     Client["🌐 Cliente HTTP<br/>(Postman, Browser, etc)"]
-    
+
     subgraph "Camada de Rotas"
         Routes["📍 Rotas<br/>main-route.ts"]
     end
-    
+
     subgraph "Camada de Controlador"
         Controller["🎮 Controlador<br/>sign-up-controller.ts<br/>- Parseamento de requisição<br/>- Validação com Zod<br/>- Tratamento de erros"]
     end
-    
+
     subgraph "Camada de Lógica de Negócio"
         UseCase["⚙️ Caso de Uso<br/>sign-up-usecase.ts<br/>- Validação de usuário<br/>- Hash de senha<br/>- Regras de negócio"]
     end
-    
+
     subgraph "Camada de Dados"
         Prisma["💾 Cliente Prisma<br/>prisma.ts<br/>- Consultas ao banco<br/>- Operações ORM"]
     end
-    
+
     Database["🗄️ PostgreSQL<br/>Banco de Dados"]
-    
+
     Client -->|HTTP POST| Routes
     Routes -->|Manipulador de rota| Controller
     Controller -->|Chamada com dados validados| UseCase
@@ -190,37 +190,123 @@ Content-Type: application/json
 
 **Resposta de Sucesso (201 Created):**
 
-```
+```json
 Status: 201 Created
-Body: (vazio)
+{
+  "user": {
+    "id": "uuid",
+    "email": "usuario@exemplo.com",
+    "password": "hashPasswordSenha",
+    "createdAt": "2025-12-15T10:30:00Z"
+  }
+}
 ```
 
 **Respostas de Erro:**
 
-**400 - Erro de Validação:**
+**409 - Usuário Já Existe:**
 ```json
 {
-  "message": "Erro de validação",
-  "errors": [
-    {
-      "path": ["email"],
-      "message": "Email obrigatório."
-    }
-  ]
+  "message": "User already exist"
 }
 ```
 
-**400 - Usuário Já Existe:**
-```json
+---
+
+### POST `/sign-in`
+
+Autentica um usuário e retorna um JWT token.
+
+**Requisição:**
+
+```http
+POST /sign-in HTTP/1.1
+Host: localhost:3333
+Content-Type: application/json
+
 {
-  "message": "Usuário já existe"
+  "email": "usuario@exemplo.com",
+  "password": "minhasenha123"
 }
 ```
 
-**500 - Erro Interno do Servidor:**
+**Schema do Corpo da Requisição:**
+
+| Campo | Tipo | Validação |
+|-------|------|-----------|
+| `email` | string | Deve ser um email válido |
+| `password` | string | Mínimo 3 caracteres |
+
+**Resposta de Sucesso (200 OK):**
+
 ```json
 {
-  "message": "Erro interno do servidor"
+  "user": {
+    "email": "usuario@exemplo.com"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Respostas de Erro:**
+
+**409 - Usuário Não Existe:**
+```json
+{
+  "message": "User already exist"
+}
+```
+
+**401 - Senha Incorreta:**
+```json
+{
+  "message": "Unauthorized."
+}
+```
+
+---
+
+### GET `/profile`
+
+Obtém os dados do perfil do usuário autenticado.
+
+**Requisição:**
+
+```http
+GET /profile HTTP/1.1
+Host: localhost:3333
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Headers Obrigatórios:**
+
+| Header | Tipo | Descrição |
+|--------|------|-----------|
+| `Authorization` | string | Bearer token JWT obtido no sign-in |
+
+**Resposta de Sucesso (200 OK):**
+
+```json
+{
+  "id": "uuid",
+  "email": "usuario@exemplo.com",
+  "createdAt": "2025-12-15T10:30:00Z"
+}
+```
+
+**Respostas de Erro:**
+
+**401 - Token Inválido ou Ausente:**
+```json
+{
+  "message": "Unauthorized."
+}
+```
+
+**404 - Usuário Não Encontrado:**
+```json
+{
+  "message": "User already exist"
 }
 ```
 
@@ -231,24 +317,142 @@ Body: (vazio)
 ```
 firstApi/
 ├── src/
-│   ├── index.ts                 # Ponto de entrada
-│   ├── routes/
-│   │   └── main-route.ts        # Definições de rotas
+│   ├── index.ts                      # Ponto de entrada
+│   ├── @types/
+│   │   └── express.d.ts              # Extensão de tipos do Express
+│   ├── app/
+│   │   ├── errors/
+│   │   │   ├── unauthorized-error.ts       # Erro 401 - Não autorizado
+│   │   │   └── user-already-exist-error.ts # Erro 409 - Usuário já existe
+│   │   └── use-cases/
+│   │       ├── profile-usecase.ts    # Lógica de busca de perfil
+│   │       ├── sign-in-usecase.ts    # Lógica de autenticação
+│   │       └── sign-up-usecase.ts    # Lógica de registro
 │   ├── controllers/
-│   │   └── sign-up-controller.ts # Tratamento e validação de requisições
-│   ├── use-cases/
-│   │   └── sign-up-usecase.ts   # Lógica de negócio
+│   │   ├── profile-controller.ts     # Tratamento de perfil
+│   │   ├── sign-in-controller.ts     # Tratamento de login
+│   │   └── sign-up-controller.ts     # Tratamento de registro
+│   ├── infra/
+│   │   ├── controllers/
+│   │   │   └── sign-up-controller.ts
+│   │   ├── middlewares/
+│   │   │   ├── error-handler.ts      # Middleware de tratamento de erros
+│   │   │   └── isAuth.ts             # Middleware de autenticação JWT
+│   │   └── routes/
+│   │       └── main-route.ts         # Definições de rotas
 │   └── lib/
 │       └── prisma/
-│           └── prisma.ts        # Instância do cliente Prisma
-├── prisma/
-│   ├── schema.prisma            # Definição do modelo de dados
-│   └── migrations/              # Migrações do banco de dados
-├── package.json                 # Dependências
-├── tsconfig.json               # Configuração TypeScript
-├── docker-compose.yml          # Serviços Docker
-└── README.md                   # Este arquivo
+**Sign-Up:**
+```bash
+curl -X POST http://localhost:3333/sign-up \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "joao@exemplo.com",
+    "password": "senhasegura123"
+  }'
 ```
+
+**Sign-In:**
+```bash
+curl -X POST http://localhost:3333/sign-in \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "joao@exemplo.com",
+    "password": "senhasegura123"
+  }'
+```
+
+**Profile (com token):**
+```bash
+curl -X GET http://localhost:3333/profile \
+  -H "Authorization: Bearer seu_token_jwt_aqui"
+```
+
+### Usando Postman
+
+#### 1. Sign-Up
+
+1. Crie uma nova requisição **POST**
+2. URL: `http://localhost:3333/sign-up`
+3. Headers: `Content-Type: application/json`
+4. Body (raw JSON):
+```json
+{
+  "email": "usuario@exemplo.com",
+  "password": "senha123"
+}
+```
+
+#### 2. Sign-In
+
+1. Crie uma nova requisição **POST**
+2. URL: `http://localhost:3333/sign-in`
+3. Headers: `Content-Type: application/json`
+4. Body (raw JSON):
+```json
+{
+  "email": "usuario@exemplo.com",
+  "password": "senha123"
+}
+```
+5. **Copie o token** da resposta
+
+#### 3. Profile
+
+1. Crie uma nova requisição **GET**
+2. URL: `http://localhost:3333/profile`
+3. Headers:
+   - `Authorization: Bearer <seu_token_aqui>`
+4. Body: (vazio)
+
+### Usando Arquivo HTTP (`request.http`)
+
+O projeto inclui um arquivo `request.http` para testes com a extensão REST Client do VS Code:
+
+```http
+### Sign-Up
+POST http://localhost:3333/sign-up
+Content-Type: application/json
+
+{
+  "email": "teste@exemplo.com",
+  "password": "senha123"
+}
+
+### Sign-In
+POST http://localhost:3333/sign-in
+Content-Type: application/json
+
+{
+  "email": "teste@exemplo.com",
+  "password": "senha123"
+}
+
+### Get Profile (com token)
+GET http://localhost:3333/profile
+Authorization: Bearer seu_token_aqui
+```
+- **Validação de Dados**: Schemas Zod para validação de entrada
+
+### 🗄️ Banco de Dados
+
+- **PostgreSQL**: Banco de dados relacional robusto
+- **Prisma ORM**: Interface type-safe para operações de banco de dados
+- **Migrações**: Controle de versão do schema do banco de dados
+
+### 🎯 Gerenciamento de Erros
+
+A API possui tratamento robusto de erros com classes personalizadas:
+
+#### **UnauthorizedError**
+- HTTP Status: **401 Unauthorized**
+- Lançado quando: Credenciais inválidas ou token JWT ausente/inválido
+- Mensagem: `"Unauthorized."`
+
+#### **UserAlreadyExistError**
+- HTTP Status: **409 Conflict** (para sign-up) ou **404 Not Found** (para profile)
+- Lançado quando: Email já registrado ou usuário não encontrado
+- Mensagem: `"User already exist"`
 
 ---
 
@@ -298,12 +502,6 @@ npm run dev
 npx prisma generate
 ```
 
-### Visualize o banco de dados com Prisma Studio:
-
-```bash
-npx prisma studio
-```
-
 ---
 
 ## Dependências
@@ -315,6 +513,7 @@ npx prisma studio
 - **zod** - Validação de schema
 - **dotenv** - Variáveis de ambiente
 - **tsx** - Executor TypeScript
+- **jsonwebtoken** - Autenticação para gerar token
 
 ---
 

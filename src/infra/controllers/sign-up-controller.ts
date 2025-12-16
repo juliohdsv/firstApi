@@ -1,7 +1,8 @@
 import type { Request, Response } from "express"
 import { z } from "zod"
-import { signUpUseCase } from "../app/use-cases/sign-up-usecase.js"
-import { UserAlreadyExistError } from "../app/errors/user-already-exist-error.js"
+import { signUpUseCase } from "../../app/use-cases/sign-up-usecase.js"
+import { UserAlreadyExistError } from "../../app/errors/user-already-exist-error.js"
+
 
 const schemaSignUpRequestBody = z.object({
   email: z.email("Email required."),

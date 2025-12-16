@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import { z } from "zod"
-import { signUpUseCase } from "../app/use-cases/sign-up-usecase.js"
-import { UserAlreadyExistError } from "../app/errors/user-already-exist-error.js"
+import { signInUseCase } from "../app/use-cases/sign-in-usecase.js"
+import { UnauthorizedError } from "../app/errors/unauthorized-error.js"
 
 const schemaSignUpRequestBody = z.object({
   email: z.email("Email required."),
@@ -11,21 +11,21 @@ const schemaSignUpRequestBody = z.object({
 })
 
 
-export async function signUpController(
+export async function signInController(
     request: Request,
     response: Response
 ){
     try {
       const { email, password } = schemaSignUpRequestBody.parse(request.body)
 
-      await signUpUseCase({ email, password })
+      const data = await signInUseCase({ email, password })
 
-      return response.status(201).send()
+      return response.status(200).send(data)
 
   } catch (error) {
 
-    if(error instanceof UserAlreadyExistError) {
-      return response.status(409).send({ message: error.message })
+    if(error instanceof UnauthorizedError) {
+      return response.status(401).send({ message: error.message })
     }
   }
 }

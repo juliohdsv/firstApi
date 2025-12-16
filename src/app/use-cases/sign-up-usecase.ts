@@ -1,6 +1,7 @@
 import { hashSync } from "bcrypt"
-import { prisma } from "../lib/prisma/prisma.js"
+import { prisma } from "../../lib/prisma/prisma.js"
 import "dotenv/config"
+import { UserAlreadyExistError } from "../errors/user-already-exist-error.js"
 
 interface ISignUpUseCaseRequest {
   email: string
@@ -28,7 +29,7 @@ export async function signUpUseCase({
   })
 
   if(userExist){
-    throw new Error("User already exist.")
+    throw new UserAlreadyExistError()
   }
 
   const SALT_ROUNDS = Number(process.env.SALT_ROUNDS)
