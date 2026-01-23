@@ -4,8 +4,9 @@ POST http://localhost:3333/sign-up
 Content-Type: application/json
 
 {
+  "name": "julio",
   "email": "julio@gmail.com",
-  "password": "123"
+  "password": "1234567"
 }
 
 ### sign-in -login
