@@ -176,6 +176,7 @@ Host: localhost:3333
 Content-Type: application/json
 
 {
+  "name": "usuario",
   "email": "usuario@exemplo.com",
   "password": "minhasenha123"
 }
@@ -185,6 +186,7 @@ Content-Type: application/json
 
 | Campo | Tipo | Validação |
 |-------|------|-----------|
+| `name` | string | Deve ser válido |
 | `email` | string | Deve ser um email válido |
 | `password` | string | Mínimo 3 caracteres |
 
@@ -195,6 +197,7 @@ Status: 201 Created
 {
   "user": {
     "id": "uuid",
+    "name": "usuario",
     "email": "usuario@exemplo.com",
     "password": "hashPasswordSenha",
     "createdAt": "2025-12-15T10:30:00Z"
@@ -378,6 +381,7 @@ curl -X GET http://localhost:3333/profile \
 4. Body (raw JSON):
 ```json
 {
+  "name": "usuario",
   "email": "usuario@exemplo.com",
   "password": "senha123"
 }
@@ -415,6 +419,7 @@ POST http://localhost:3333/sign-up
 Content-Type: application/json
 
 {
+  "name": "teste",
   "email": "teste@exemplo.com",
   "password": "senha123"
 }
@@ -464,6 +469,7 @@ A API possui tratamento robusto de erros com classes personalizadas:
 curl -X POST http://localhost:3333/sign-up \
   -H "Content-Type: application/json" \
   -d '{
+    "name": "joao",
     "email": "joao@exemplo.com",
     "password": "senhasegura123"
   }'
@@ -477,6 +483,7 @@ curl -X POST http://localhost:3333/sign-up \
 4. Body (raw JSON):
 ```json
 {
+  "name": "usuario",
   "email": "usuario@exemplo.com",
   "password": "senha123"
 }
