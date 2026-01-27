@@ -122,7 +122,7 @@ npm install
 Crie um arquivo `.env` no diretório raiz:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/firstapi"
+DATABASE_URL="postgresql://user:password@localhost:5432/firstapi?schema=public"
 ```
 
 4. **Execute as migrações do Prisma:**
